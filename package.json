@@ -1,0 +1,27 @@
+{
+  "name": "bienes_raices",
+  "version": "1.0.0",
+  "description": "Proyecto Bienes Raices en Node.js",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./index.js",
+    "server": "nodemon ./index.js"
+  },
+  "keywords": [
+    "MVC",
+    "Tailwind",
+    "Pug",
+    "MySql",
+    "Sequelize"
+  ],
+  "author": "Bladimir G. Parra B. | IP Proyectos y Soluciones",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1",
+    "nodemon": "^3.0.1"
+  }
+}
