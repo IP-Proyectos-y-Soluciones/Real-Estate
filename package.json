@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node ./index.js",
-    "server": "nodemon ./index.js"
+    "server": "nodemon ./index.js",
+    "css": "npx tailwindcss -i ./public/css/tailwind.css -o public/css/app.css --watch"
   },
   "keywords": [
     "MVC",
@@ -18,10 +19,15 @@
   "author": "Bladimir G. Parra B. | IP Proyectos y Soluciones",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "pug": "^3.0.2"
   },
   "devDependencies": {
-    "dotenv": "^16.3.1",
-    "nodemon": "^3.0.1"
+    "autoprefixer": "^10.4.16",
+    "nodemon": "^3.0.1",
+    "postcss": "^8.4.31",
+    "postcss-cli": "^10.1.0",
+    "tailwindcss": "^3.3.5"
   }
 }
