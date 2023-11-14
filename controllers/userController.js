@@ -1,13 +1,19 @@
 const formLogin = (req, res) => {
   res.render("auth/login", {
-    pagina: 'Iniciar Sesión'
+    page: 'Iniciar Sesión'
   });
 };
 
 const formRegister = (req, res) => {
   res.render("auth/register", {
-    pagina: 'Crear Cuenta'
+    page: 'Crear Cuenta'
   });
 };
 
-export { formLogin, formRegister };
+const formForgetPassword = (req, res) => {
+  res.render("auth/forget-password", {
+    page: 'Recupera tu acceso a Bienes Raices'
+  });
+}
+
+export { formLogin, formRegister, formForgetPassword };
