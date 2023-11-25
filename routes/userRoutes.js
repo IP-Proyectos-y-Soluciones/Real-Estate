@@ -1,17 +1,33 @@
 import express from "express";
-import { formLogin, formRegistration, register, confirm, formForgetPassword } from "../controllers/userController.js";
-
+import {
+  formLogin,
+  formRegistration,
+  register,
+  confirm,
+  formForgetPassword,
+  resetPassword,
+  checkToken,
+  newPassword,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
-router.get( "/login", formLogin );
+// Login
+router.get("/login", formLogin);
 
-router.get( '/register', formRegistration );
-router.post( '/register', register );
+// Registro
+router.get("/register", formRegistration);
+router.post("/register", register);
 
-router.get( "/confirm/:token", confirm );
+// Confirmar Cuenta
+router.get("/confirm/:token", confirm);
 
-router.get("/forget-password", formForgetPassword );
+// Formulario Olvide mi Password
+router.get("/forget-password", formForgetPassword);
+router.post("/forget-password", resetPassword);
 
+// Almacenar el nuevo Password
+router.get("/forget-password/:token", checkToken);
+router.post("/forget-password/:token", newPassword);
 
 export default router;

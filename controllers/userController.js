@@ -1,8 +1,8 @@
 import { check, validationResult } from "express-validator";
-//import bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import { generateId } from '../helpers/tokens.js';
-import { emailRegister } from "../helpers/email.js";
+import { emailRegister, emailForgetPassword } from "../helpers/email.js";
 
 const formLogin = (req, res) => {
   res.render("auth/login", {
@@ -123,4 +123,121 @@ const formForgetPassword = (req, res) => {
   });
 };
 
-export { formLogin, formRegistration, register, confirm, formForgetPassword };
+const resetPassword = async ( req, res ) => {
+  // Validación
+  await check("email")
+    .isEmail()
+    .withMessage("Eso no parece un email")
+    .run(req);
+
+  let result = validationResult(req);
+
+  // Verificar que el resultado este vacio
+  if ( !result.isEmpty() ) {
+    // Errores
+    return res.render("auth/forget-password", {
+      page: "Recupera tu acceso a Bienes Raices",
+      csrfToken: req.csrfToken(),
+      errors: result.array(),
+    });
+  }
+
+  // Buscar el usuario
+  const { email } = req.body;
+
+  const user = await User.findOne({ where: { email } });
+
+  if ( !user ) {
+    return res.render("auth/forget-password", {
+      page: "Recupera tu acceso a Bienes Raices",
+      csrfToken: req.csrfToken(),
+      errors: [{ msg: "El Email no Pertenece a ningún usuario" }],
+    });
+  }
+
+  // Generar un token y enviar el email
+  user.token = generateId();
+  await user.save();
+
+  // Enviar un email
+  emailForgetPassword({
+    email: user.email,
+    name: user.name,
+    token: user.token
+  })
+
+  // Mostrar mensaje de confirmación
+  res.render("templates/message", {
+    page: "Reestablece tu Password",
+    mensaje: "Hemos enviado un email con las instrucciones",
+  });
+};
+
+const checkToken = async ( req, res ) => {
+  const { token } = req.params;
+
+  const user = await User.findOne({ where: { token } });
+
+  if (!user) {
+    return res.render("auth/confirm-account", {
+      page: "Reestablece tu Password",
+      mensaje: "Hubo un error al validar tu información, intenta de nuevo",
+      error: true,
+    });
+  }
+
+  // Mostrar formulario para modificar el password
+  res.render("auth/reset-password", {
+    page: "Reestablece Tu Password",
+    csrfToken: req.csrfToken(),
+  });
+};
+
+const newPassword = async ( req, res ) => {
+  // Validar el password
+  await check("password")
+    .isLength({ min: 6 })
+    .withMessage("El Password debe ser de al menos 6 caracteres")
+    .run(req);
+
+  let result = validationResult(req);
+
+  // Verificar que el resultado este vacio
+  if (!result.isEmpty()) {
+    // Errores
+    return res.render("auth/reset-password", {
+      page: "Reestablece tu Password",
+      csrfToken: req.csrfToken(),
+      errors: result.array(),
+    });
+  }
+
+  const { token } = req.params;
+  const { password } = req.body;
+
+  // Identificar quien hace el cambio
+  const user = await User.findOne({ where: { token } });
+
+  // Hashear el nuevo password
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+  user.token = null;
+
+  await user.save();
+
+  res.render("auth/confirm-account", {
+    page: "Password Reestablecido",
+    mensaje: "El Password se guardó correctamente",
+  });
+};
+
+export { 
+  formLogin, 
+  formRegistration, 
+  register, 
+  confirm, 
+  formForgetPassword,
+  resetPassword,
+  checkToken,
+  newPassword
+};
