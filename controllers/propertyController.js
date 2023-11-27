@@ -1,6 +1,7 @@
 import { unlink } from "node:fs/promises";
 import { validationResult } from "express-validator";
 import { Price, Category, Property, Message, User } from "../models/index.js";
+import { enSeller, formatDate } from "../helpers/index.js";
 
 const admin = async (req, res) => {
   const { id } = req.user;
@@ -287,4 +288,38 @@ const remove = async ( req, res ) => {
   res.redirect("/my-properties");
 };
 
-export { admin, create, save, addImage, storeImage, edit, saveChanges, remove };
+// Muestra una propiedad
+const showProperty = async ( req, res ) => {
+  const { id } = req.params;
+
+  // Comprobar que la propiedad exista
+  const property = await Property.findByPk(id, {
+    include: [
+      { model: Price, as: "price" },
+      { model: Category, as: "category" },
+    ],
+  });
+
+  if (!property || !property.published) {
+    return res.redirect("/404");
+  }
+
+  res.render("properties/show", {
+    property,
+    page: property.title,
+    csrfToken: req.csrfToken(),
+    user: req.user,
+  });
+};
+
+export {
+  admin,
+  create,
+  save,
+  addImage,
+  storeImage,
+  edit,
+  saveChanges,
+  remove,
+  showProperty,
+};

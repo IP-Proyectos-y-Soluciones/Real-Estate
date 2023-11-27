@@ -9,9 +9,11 @@ import {
   edit,
   saveChanges,
   remove,
+  showProperty,
 } from "../controllers/propertyController.js";
 import protectPath from "../middleware/protectPath.js";
 import upload from "../middleware/uploadImage.js";
+import identifyUser from "../middleware/identifyUser.js";
 
 const router = express.Router();
 
@@ -72,5 +74,9 @@ router.post(
 );
 
 router.post("/properties/remove/:id", protectPath, remove);
+
+
+// Area Publica
+router.get("/property/:id", showProperty);
 
 export default router;
