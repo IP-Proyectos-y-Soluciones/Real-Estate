@@ -4,24 +4,55 @@ import { Price, Category, Property, Message, User } from "../models/index.js";
 import { enSeller, formatDate } from "../helpers/index.js";
 
 const admin = async (req, res) => {
-  const { id } = req.user;
+  // Leer QueryString
+  const { page: actualPage } = req.query;
 
-  const properties = await Property.findAll({
-    where: {
-      userId: id,
-    },
-    include: [
-      { model: Category, as: "category" },
-      { model: Price, as: "price" },
-      { model: Message, as: "messages" },
-    ],
-  });
+  const expresion = /^[1-9]$/;
 
-  res.render("properties/admin", {
-    page: "Mis Propiedades",
-    properties,
-    csrfToken: req.csrfToken(),
-  });
+  if (!expresion.test(actualPage)) {
+    return res.redirect("/my-properties?page=1");
+  }
+
+  try {
+    const { id } = req.user;
+
+    // Limites y Offset para el paginador
+    const limit = 10;
+    const offset = ((actualPage * limit) - limit);
+
+    const [properties, total] = await Promise.all([
+      Property.findAll({
+        limit,
+        offset,
+        where: {
+          userId: id,
+        },
+        include: [
+          { model: Category, as: "category" },
+          { model: Price, as: "price" },
+          { model: Message, as: "messages" },
+        ],
+      }),
+      Property.count({
+        where: {
+          userId: id,
+        },
+      }),
+    ]);
+
+    res.render("properties/admin", {
+      page: "Mis Propiedades",
+      properties,
+      csrfToken: req.csrfToken(),
+      pages: Math.ceil(total / limit),
+      actualPage: Number(actualPage),
+      total,
+      offset,
+      limit,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // Formulario para crear una nueva propiedad
@@ -265,7 +296,7 @@ const saveChanges = async (req, res) => {
   }
 };
 
-const remove = async ( req, res ) => {
+const remove = async (req, res) => {
   const { id } = req.params;
 
   // Validar que la propiedad exista
@@ -289,7 +320,7 @@ const remove = async ( req, res ) => {
 };
 
 // Muestra una propiedad
-const showProperty = async ( req, res ) => {
+const showProperty = async (req, res) => {
   const { id } = req.params;
 
   // Comprobar que la propiedad exista
