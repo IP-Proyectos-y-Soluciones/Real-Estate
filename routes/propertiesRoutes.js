@@ -6,12 +6,15 @@ import {
   save,
   addImage,
 } from "../controllers/propertyController.js";
+import protectPath from "../middleware/protectPath.js";
 
 const router = express.Router();
 
-router.get("/my-properties", admin);
-router.get("/properties/create", create);
-router.post("/properties/create",
+router.get("/my-properties", protectPath, admin);
+router.get("/properties/create", protectPath, create);
+router.post(
+  "/properties/create",
+  protectPath,
   body("title").notEmpty().withMessage("El Titulo del Anuncio es Obligatorio"),
   body("description")
     .notEmpty()
@@ -28,9 +31,9 @@ router.post("/properties/create",
     .withMessage("Selecciona la Cantidad de Estacionamientos"),
   body("wc").isNumeric().withMessage("Selecciona la Cantidad de Baños"),
   body("lat").notEmpty().withMessage("Ubica la Propiedad en el Mapa"),
-  save
+  save,
 );
 
-router.get("/properties/add-image/:id", addImage);
+router.get("/properties/add-image/:id", protectPath, addImage);
 
 export default router;
