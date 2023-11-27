@@ -3,7 +3,6 @@ import { validationResult } from "express-validator";
 import { Price, Category, Property, Message, User } from "../models/index.js";
 
 const admin = async (req, res) => {
-
   const { id } = req.user;
 
   const properties = await Property.findAll({
@@ -129,7 +128,7 @@ const addImage = async (req, res) => {
   });
 };
 
-const storeImage = async ( req, res, next ) => {
+const storeImage = async (req, res, next) => {
   const { id } = req.params;
 
   // Validar que la propiedad exista
@@ -164,4 +163,105 @@ const storeImage = async ( req, res, next ) => {
   }
 };
 
-export { admin, create, save, addImage, storeImage };
+const edit = async (req, res) => {
+  const { id } = req.params;
+
+  // Validar que la propiedad exista
+  const property = await Property.findByPk(id);
+
+  if (!property) {
+    return res.redirect("/my-properties");
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if (property.userId.toString() !== req.user.id.toString()) {
+    return res.redirect("/my-properties");
+  }
+
+  // Consultar Modelo de Precio y Categorias
+  const [categories, prices] = await Promise.all([
+    Category.findAll(),
+    Price.findAll(),
+  ]);
+
+  res.render("properties/edit", {
+    page: `Editar Propiedad: ${property.title}`,
+    csrfToken: req.csrfToken(),
+    categories,
+    prices,
+    data: property,
+  });
+};
+
+const saveChanges = async (req, res) => {
+  // Verificar la validación
+  let result = validationResult(req);
+
+  if (!result.isEmpty()) {
+    // Consultar Modelo de Precio y Categorias
+    const [categories, prices] = await Promise.all([
+      Category.findAll(),
+      Price.findAll(),
+    ]);
+
+    return res.render("properties/edit", {
+      page: "Editar Propiedad",
+      csrfToken: req.csrfToken(),
+      categories,
+      prices,
+      errors: result.array(),
+      data: req.body,
+    });
+  }
+
+  const { id } = req.params;
+
+  // Validar que la propiedad exista
+  const property = await Property.findByPk(id);
+
+  if (!property) {
+    return res.redirect("/my-properties");
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if (property.userId.toString() !== req.user.id.toString()) {
+    return res.redirect("/my-properties");
+  }
+
+  // Reescribir el objeto y actualizarlo
+  try {
+    const {
+      title,
+      description,
+      bedrooms,
+      parking,
+      wc,
+      street,
+      lat,
+      lng,
+      price: priceId,
+      category: categoryId,
+    } = req.body;
+
+    property.set({
+      title,
+      description,
+      bedrooms,
+      parking,
+      wc,
+      street,
+      lat,
+      lng,
+      priceId,
+      categoryId,
+    });
+
+    await property.save();
+
+    res.redirect("/my-properties");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export { admin, create, save, addImage, storeImage, edit, saveChanges };
