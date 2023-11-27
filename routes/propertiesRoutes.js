@@ -5,12 +5,15 @@ import {
   create,
   save,
   addImage,
+  storeImage,
 } from "../controllers/propertyController.js";
 import protectPath from "../middleware/protectPath.js";
+import upload from "../middleware/uploadImage.js";
 
 const router = express.Router();
 
 router.get("/my-properties", protectPath, admin);
+
 router.get("/properties/create", protectPath, create);
 router.post(
   "/properties/create",
@@ -35,5 +38,11 @@ router.post(
 );
 
 router.get("/properties/add-image/:id", protectPath, addImage);
+router.post(
+  "/properties/add-image/:id",
+  protectPath,
+  upload.single("image"),
+  storeImage,
+);
 
 export default router;

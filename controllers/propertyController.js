@@ -6,7 +6,6 @@ const admin = async (req, res) => {
 
     res.render("properties/admin", {
       page: "Mis Propiedades",
-      barra: true,
     });
 };
 
@@ -24,7 +23,6 @@ const create = async (req, res) => {
     categories,
     prices,
     data: {},
-    barra: true,
   });
 };
 
@@ -110,10 +108,45 @@ const addImage = async (req, res) => {
   }
 
   res.render("properties/add-image", {
-    pagina: `Agregar Imagen: ${property.title}`,
+    page: `Agregar Imagen: ${property.title}`,
     csrfToken: req.csrfToken(),
     property,
   });
 };
 
-export { admin, create, save, addImage };
+const storeImage = async ( req, res, next ) => {
+  const { id } = req.params;
+
+  // Validar que la propiedad exista
+  const property = await Property.findByPk(id);
+
+  if (!property) {
+    return res.redirect("/my-properties");
+  }
+
+  // Validar que la propiedad no este publicada
+  if (property.published) {
+    return res.redirect("/my-properties");
+  }
+
+  // Validar que la propiedad pertenece a quien visita esta página
+  if (req.user.id.toString() !== property.userId.toString()) {
+    return res.redirect("/my-properties");
+  }
+
+  try {
+    // console.log(req.file)
+
+    // Almacenar la imagen y publicar propiedad
+    property.image = req.file.filename;
+    property.published = 1;
+
+    await property.save();
+
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export { admin, create, save, addImage, storeImage };
