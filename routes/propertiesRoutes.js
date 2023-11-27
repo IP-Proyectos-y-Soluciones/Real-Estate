@@ -7,7 +7,8 @@ import {
   addImage,
   storeImage,
   edit,
-  saveChanges
+  saveChanges,
+  remove,
 } from "../controllers/propertyController.js";
 import protectPath from "../middleware/protectPath.js";
 import upload from "../middleware/uploadImage.js";
@@ -70,5 +71,6 @@ router.post(
   saveChanges,
 );
 
+router.post("/properties/remove/:id", protectPath, remove);
 
 export default router;

@@ -264,4 +264,27 @@ const saveChanges = async (req, res) => {
   }
 };
 
-export { admin, create, save, addImage, storeImage, edit, saveChanges };
+const remove = async ( req, res ) => {
+  const { id } = req.params;
+
+  // Validar que la propiedad exista
+  const property = await Property.findByPk(id);
+  if (!property) {
+    return res.redirect("/my-properties");
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if (property.userId.toString() !== req.user.id.toString()) {
+    return res.redirect("/my-properties");
+  }
+
+  // Eliminar la imagen
+  await unlink(`public/uploads/${property.image}`);
+  console.log(`Se eliminó la imagen ${property.image}`);
+
+  // Eliminar la propiedad
+  await property.destroy();
+  res.redirect("/my-properties");
+};
+
+export { admin, create, save, addImage, storeImage, edit, saveChanges, remove };
