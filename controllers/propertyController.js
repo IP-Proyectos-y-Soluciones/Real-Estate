@@ -4,9 +4,24 @@ import { Price, Category, Property, Message, User } from "../models/index.js";
 
 const admin = async (req, res) => {
 
-    res.render("properties/admin", {
-      page: "Mis Propiedades",
-    });
+  const { id } = req.user;
+
+  const properties = await Property.findAll({
+    where: {
+      userId: id,
+    },
+    include: [
+      { model: Category, as: "category" },
+      { model: Price, as: "price" },
+      { model: Message, as: "messages" },
+    ],
+  });
+
+  res.render("properties/admin", {
+    page: "Mis Propiedades",
+    properties,
+    csrfToken: req.csrfToken(),
+  });
 };
 
 // Formulario para crear una nueva propiedad
