@@ -17,7 +17,7 @@ div(class="bg-indigo-700 py-5 hidden lg:block")
       a(href="/categories/4" class="text-sm font-bold uppercase text-white") Terrenos 
       a(href="/categories/5" class="text-sm font-bold uppercase text-white") Cabañas 
 
-    form(action="/searcher" method="POST" class="flex gap-3 items-center")
+    form(action="/search" method="POST" class="flex gap-3 items-center")
       input(type="hidden" name="_csrf" value= csrfToken)
       label(for="term" class="text-sm uppercase font-bold text-white") Búsqueda
       input(type="text" id="term" name="term" placeholder="Buscar Propiedades" class="p-2 rounded-lg shadow text-sm")
