@@ -9,7 +9,10 @@ import {
   edit,
   saveChanges,
   remove,
+  changeStatus,
   showProperty,
+  sendMessage,
+  seeMessages,
 } from "../controllers/propertyController.js";
 import protectPath from "../middleware/protectPath.js";
 import upload from "../middleware/uploadImage.js";
@@ -75,8 +78,18 @@ router.post(
 
 router.post("/properties/remove/:id", protectPath, remove);
 
+router.put("/properties/:id", protectPath, changeStatus);
 
 // Area Publica
-router.get("/property/:id", showProperty);
+router.get("/property/:id", identifyUser, showProperty);
+
+// Almacenar los mensajes
+router.post('/property/:id',
+    identifyUser,
+    body('message').isLength({min: 20}).withMessage('El Mensaje no puede ir vacio o es muy corto'),
+    sendMessage
+);
+
+router.get("/messages/:id", protectPath, seeMessages);
 
 export default router;

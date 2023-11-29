@@ -18,7 +18,7 @@ const admin = async (req, res) => {
 
     // Limites y Offset para el paginador
     const limit = 10;
-    const offset = ((actualPage * limit) - limit);
+    const offset = actualPage * limit - limit;
 
     const [properties, total] = await Promise.all([
       Property.findAll({
@@ -319,6 +319,31 @@ const remove = async (req, res) => {
   res.redirect("/my-properties");
 };
 
+// Modifica el estado de la propiedad
+const changeStatus = async (req, res) => {
+  const { id } = req.params;
+
+  // Validar que la propiedad exista
+  const property = await Property.findByPk(id);
+  if (!property) {
+    return res.redirect("/my-properties");
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if (property.userId.toString() !== req.user.id.toString()) {
+    return res.redirect("/my-properties");
+  }
+
+  // Actualizar
+  property.published = !property.published;
+
+  await property.save();
+
+  res.json({
+    result: true,
+  });
+};
+
 // Muestra una propiedad
 const showProperty = async (req, res) => {
   const { id } = req.params;
@@ -327,7 +352,7 @@ const showProperty = async (req, res) => {
   const property = await Property.findByPk(id, {
     include: [
       { model: Price, as: "price" },
-      { model: Category, as: "category" },
+      { model: Category, as: "category", scope: "removePassword" },
     ],
   });
 
@@ -340,6 +365,82 @@ const showProperty = async (req, res) => {
     page: property.title,
     csrfToken: req.csrfToken(),
     user: req.user,
+    enSeller: enSeller(req.user?.id, property.userId),
+  });
+};
+
+const sendMessage = async (req, res) => {
+  const { id } = req.params;
+
+  // Comprobar que la propiedad exista
+  const property = await Property.findByPk(id, {
+    include: [
+      { model: Price, as: "price" },
+      { model: Category, as: "category" },
+    ],
+  });
+
+  if (!property) {
+    return res.redirect("/404");
+  }
+
+  // Renderizar los errores
+  // Validación
+  let result = validationResult(req);
+
+  if (!result.isEmpty()) {
+    return res.render("properties/show", {
+      property,
+      page: property.title,
+      csrfToken: req.csrfToken(),
+      user: req.user,
+      enSeller: enSeller(req.user?.id, property.userId),
+      errors: result.array(),
+    });
+  }
+
+  const { message } = req.body;
+  const { id: propertyId } = req.params;
+  const { id: userId } = req.usuario || {};
+
+  // Almacenar el mensaje
+  await Message.create({
+    message,
+    propertyId,
+    userId,
+  });
+
+  res.redirect("/");
+};
+
+// Leer mensajes recibidos
+const seeMessages = async (req, res) => {
+  const { id } = req.params;
+
+  // Validar que la propiedad exista
+  const property = await Property.findByPk(id, {
+    include: [
+      {
+        model: Message,
+        as: "messages",
+        include: [{ model: User.scope("removePassword"), as: "user" }],
+      },
+    ],
+  });
+
+  if (!property) {
+    return res.redirect("/my-properties");
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if (property.userId.toString() !== req.user.id.toString()) {
+    return res.redirect("/my-properties");
+  }
+
+  res.render("properties/messages", {
+    page: "Mensajes",
+    messages: property.messages,
+    formatDate,
   });
 };
 
@@ -352,5 +453,8 @@ export {
   edit,
   saveChanges,
   remove,
+  changeStatus,
   showProperty,
+  sendMessage,
+  seeMessages,
 };
