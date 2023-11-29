@@ -27,11 +27,11 @@
         if (event.target.classList.contains("bg-yellow-100")) {
           event.target.classList.add("bg-green-100", "text-green-800");
           event.target.classList.remove("bg-yellow-100", "text-yellow-800");
-          event.target.textContent = "Published";
+          event.target.textContent = "Publicado";
         } else {
           event.target.classList.remove("bg-green-100", "text-green-800");
           event.target.classList.add("bg-yellow-100", "text-yellow-800");
-          event.target.textContent = "Not Published";
+          event.target.textContent = "No Publicado";
         }
       }
     } catch (error) {
