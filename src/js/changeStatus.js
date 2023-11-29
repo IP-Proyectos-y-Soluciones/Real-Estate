@@ -8,8 +8,8 @@
     boton.addEventListener("click", changeStateProperty);
   });
 
-  async function changeStateProperty(e) {
-    const { propertyId: id } = e.target.dataset;
+  async function changeStateProperty(event) {
+    const { propertyId: id } = event.target.dataset;
 
     try {
       const url = `/properties/${id}`;
@@ -24,14 +24,14 @@
       const { result } = await response.json();
 
       if (result) {
-        if (e.target.classList.contains("bg-yellow-100")) {
-          e.target.classList.add("bg-green-100", "text-green-800");
-          e.target.classList.remove("bg-yellow-100", "text-yellow-800");
-          e.target.textContent = "Published";
+        if (event.target.classList.contains("bg-yellow-100")) {
+          event.target.classList.add("bg-green-100", "text-green-800");
+          event.target.classList.remove("bg-yellow-100", "text-yellow-800");
+          event.target.textContent = "Published";
         } else {
-          e.target.classList.remove("bg-green-100", "text-green-800");
-          e.target.classList.add("bg-yellow-100", "text-yellow-800");
-          e.target.textContent = "Not Published";
+          event.target.classList.remove("bg-green-100", "text-green-800");
+          event.target.classList.add("bg-yellow-100", "text-yellow-800");
+          event.target.textContent = "Not Published";
         }
       }
     } catch (error) {
